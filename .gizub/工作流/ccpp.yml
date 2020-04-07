@@ -1,0 +1,22 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    FROM archlinux/base:latest
+
+    RUN echo -e '[froggies]\nServer = https://repo.froggi.es/$arch\nSigLevel = Never' >> /etc/pacman.conf
+    RUN pacman --noconfirm -Syuu
+    RUN pacman --noconfirm -S git sudo base-devel mingw-w64-gcc gitlab-runner meson inetutils ninja glslang
+    RUN mkdir /runner
+    RUN chmod -R 777 /runner
+    RUN gitlab-runner register --non-interactive --name frog-runner --url https://git.froggi.es --registration-token MYTOKEN --executor shell
+
+    ENTRYPOINT ["gitlab-runner"]
+    CMD ["run"]
